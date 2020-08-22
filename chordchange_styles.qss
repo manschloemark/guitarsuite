@@ -1,0 +1,23 @@
+QWidget[id=main] {}
+QWidget[id=scoreboard] { min-width: 240px; min-height: 100px}
+QWidget[id=scoreboard] * {}
+QLabel[id=chordlabel] { font-size: 22px; font-family: "SF Mono", "Monospace";}
+QLabel[id=scorelabel] { font-size: 18px; text-align: center; }
+QWidget[id=start] { min-width: 160px; max-width: 120px; }
+QWidget[id=cancel] { min-width: 120px; max-width: 120px; }
+QPushButton[type=pairbutton] { font-family: Hack; font-size: 16px; font-weight: bold; }
+QWidget[id=gridcontainer] { background-color: #222233 }
+
+QWidget[id=timer-instruction] { text-align: center; font-size: 28px; }
+QWidget[id=timer-display] {
+    text-align: center;
+    font-family: Go Mono;
+    font-size: 48px;
+}
+
+QLabel[id=input-instruction] { text-align: center; font-size: 18px; }
+QSpinBox { min-width: 64px; max-width: 64px; }
+QPushButton[id=score-input] { min-width: 64px; max-width: 64px; }
+
+QLabel[id=result] { font-size: 24px; text-align: center; }
+QLabel[type=results-label] { font-size: 18px; text-align: center; }
