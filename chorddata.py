@@ -6,29 +6,28 @@ import json
 import random
 import re
 import os
+import sys
+import time
 
-# I am wondering if I should make a class or just use a namedtuple
+# NOTE: I am wondering if I should make a class or just use a namedtuple
+
 # There are many types of chords this does not account for. I don't think
 # I will need to worry about them for the time being.
 CHORD_PATTERN = "^[a-gA-G][b#]?[m]?[2345679]?$|^[a-gA-G][b#]?[m]?1[13]$"
-
+chord_regex = re.compile(CHORD_PATTERN)
 
 def parse_chord(chord):
     """
-        THE CHORD_PATTERN WILL NEED TO BE UPDATED AS I LEARN MORE MUSIC THEORY
-
         Takes a string as input and uses regex to verify that it is a valid chord.
 
         The entire string passed as the argument must be valid - it should not
         output a match if any part of the argument is invalid.
-
             i.e. passing 'ABCD' should not see 'A' and consider it valid since the pattern
-            after it does not match the CHORD_PATTERN
+            after it does not match CHORD_PATTERN
 
-        Returns the valid chord in a normalized format if found and None otherwise.
+        Returns the valid chord with the key capitalized if found and None otherwise.
     """
-    chord_re = re.compile(CHORD_PATTERN)
-    chord = chord_re.search(chord)
+    chord = chord_regex.search(chord)
     if chord:
         return chord.group(0).capitalize()  # Capitalize the key for consistency
     return None
@@ -41,8 +40,9 @@ def normalize_key(chord_a, chord_b):
 
         Keys in ChordData.scores are sorted alphabetically.
 
-        This function first validates each chord with parse_chord and, if they
-        are bothvalid, returns a sorted tuple containing each.
+        Pass each chord through parse_chord to make sure they are proper format
+        If either chord returns None, this function will return None
+        If both chords return from parse_chord, return a sorted tuple of the two chords
     """
     key = [(parse_chord(chord_a), parse_chord(chord_b))]
     if None in key:
@@ -57,25 +57,32 @@ class ChordData:
         chord changes progress
     """
 
-    def __init__(self, file=None):
-        # TODO : If I ever want to share this I will need to learn how to handle files.
-        # How would I make sure to use the right directory?
-        if file is None:
-            self._file = "mychords.txt"
+    def __init__(self, source=None):
+        if source != None:
+            if os.path.isabs(source):
+                self._file = source
+            else: # If a filename is given with no path the file is assumed to exist in the same dir as the script
+                self._file = os.path.join(os.path.dirname(__file__), source)
         else:
-            self._file = file
+            # Defaults to mychords.txt if no file is given. Maybe there is a way to implement a config that sets the default
+            self._file = "./mychords.txt"
 
         self._load()
 
+    # NOTE should I return copies of the chords and scores? I believe it would be safer because another program could
+    #      alter the ChordData.__chords/__scores attributes bypassing the chord parser. But at the same time it is convenient
+    #      because the other programs that use the data don't need to worry about updating the objects when adding chords and scores.
+    #      At the same time, it kind of defeats the purpose of using a property at all, because it is not any safer.
     @property
     def chords(self):
-        """ Returns list containing known chords. No duplicates. """
+        """ Returns list containing known chords. No duplicates.
+            Returns a copy because the list should be changed using the ChordData.add_chord method"""
         return self.__chords
 
     @property
     def scores(self):
         """
-        Return dict containing all chord-pairs playable with known chords and
+        Return dict containing all chord pairs playable from known chords and
         high score reached in One-Minute Chord Changes
         """
         return self.__scores
@@ -91,40 +98,41 @@ class ChordData:
         """
             Add chord to self.chords.
             Chord is first checked by parse_chord to make sure it is a real chord.
-            No duplicates are allowed in self.chords.
-            If the chord is added, this method updates self.scores to include the new chord
+            Check if chord is duplicate
+            If not duplicate, first update the dict of chord pairs, then add the chord to the list of chords
         """
         chord = parse_chord(chord)
 
         if chord and chord not in self.chords:
-            self.update_chordpairs(chord)
+            self._update_chordpairs(chord)
             self.chords.append(chord)
             return True
         return None
 
-    def add_score(self, pair, score):
+    def add_score(self, pair, score, timestamp=None):
         """
-            Sets the value for self.scores[pair] to score if it is greater than
-            the current value
+        Adds the score the the chord pair's dict of times and scores
         """
         # key = normalize_key(*pair)
         key = pair
+        if timestamp == None:
+            timestamp = time.time()
         if key in self.scores:
-            if score > self.scores[key]:
-                self.scores[key] = score
-                return True
+            self.scores[key][timestamp] = score
+            return True
         return None
 
-    def update_chordpairs(self, chord):
+    def _update_chordpairs(self, chord):
         """
             Adds a new key to self.scores for each combination of chord and each
             chord in self.chords
 
             This function is automatically called when a chord is added to self.chords
+            Each new chord pair is initally given a dict with one item: the timestamp of it's creation with a value of None
         """
         for old_chord in self.chords:
             new_key = tuple(sorted([chord, old_chord]))
-            self.scores[new_key] = 0
+            self.scores[new_key] = {time.time(): None}
 
     def random_key(self):
         """
@@ -174,9 +182,9 @@ class ChordData:
     def __repr__(self):
         """
             I learned to use self.__class__.__name__ from a talk by Raymond Hittenger.
-            This is better than simply typing in the class name because
+            This is better than manually typing in the class name because
                 A. every class knows it's own name
-                B. This is safe in the even of subclassing down the line
+                B. This is safe in the event of subclassing down the line
         """
         return f"{self.__class__.__name__}('{self._file}')"
 
@@ -200,10 +208,14 @@ class ChordData:
             else:
                 with open(file, "r") as savefile:
                     self.__chords, json_dict = json.load(savefile)
+                    # I need to loop through the dict loaded from the file to
+                    #   1. Turn the chord pairs into tuples
+                    #   2. turn the timestamps into floats.
                     self.__scores = {
-                        tuple(key.split(sep)): value for key, value in json_dict.items()
+                            tuple(key.split(sep)): {float(timestamp): score for timestamp, score in value.items()} for key, value in json_dict.items()
                     }
         except FileNotFoundError:
+            # If the given file was not found, don't do anything about it yet because the _save method can create the file.
             self.__chords, self.__scores = [], {}
 
     def _save(self, file=None, sep="&"):
@@ -227,7 +239,9 @@ class ChordData:
 # changes the Class' property itself.
 
 if __name__ == "__main__":
-    with ChordData("mytest.txt") as g:
-        c = input("Enter a chord")
-        while c is not "0":
-            print(g.add_score(("A", "Am"), int(c)))
+    if len(sys.argv) > 1:
+        c = ChordData(sys.argv[1])
+        c.add_chord("A")
+        c.add_chord("B")
+        print(c.chords)
+        c._save()

@@ -19,3 +19,6 @@ This program streamlines the monotonous parts of guitar practice.
     - tools to practice chord progressions
     - scale practice
   - Add a metronome feature
+
+## Problems
+  - I use regular expressions to verify that chords are valid. However I don't actually know what all of the different kinds of chords are so the regex is incomplete. For beginners like myself this is not really a problem. Diminished, suspended, or something complicated like 'G#m7b5' will not work. I will update the regex when I either learn more about music theory or when I get a chance.
