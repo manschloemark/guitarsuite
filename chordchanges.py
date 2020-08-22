@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QColor, QFont, QPalette
 import chorddata
 import util
+import time
 
 
 class ChordChanges(QWidget):
@@ -115,8 +116,9 @@ class ChordChanges(QWidget):
         self.content_stack.setCurrentWidget(self.score_input)
 
     def enter_score(self, score):
-        old_score = self.data.scores[self.key]
-        if self.data.add_score(self.key, score):
+        old_score = self.data.hiscore(self.key)
+        self.data.add_score(self.key, score, time.time())
+        if score > old_score:
             self.chord_select.chord_pair_grid.button_dict[self.key].score = score
             self.scoreboard.update_score(score)
             self.results.generate_results(True, old_score, score)
@@ -191,14 +193,14 @@ class ChordSelect(QWidget):
             the result through the pair_selected signal
             The parameter x is a throwaway value from the PushButton.clicked signal """
         key = self.data.random_key()
-        self.pair_selected.emit(key, self.data.scores[key])
+        self.pair_selected.emit(key, self.data.hiscore(key))
 
     def emit_weighted(self, x):
         """ Calls a chorddata object's random_key method and passes
             the result through the pair_selected signal
             The parameter x is a throwaway value from the PushButton.clicked signal """
         key = self.data.weighted_random()
-        self.pair_selected.emit(key, self.data.scores[key])
+        self.pair_selected.emit(key, self.data.hiscore(key))
 
     def refresh(self):
         self.chord_pair_grid.rearrange()
@@ -258,7 +260,8 @@ class ChordPairGrid(QWidget):
         self.button_dict = {}
         self.buttons = []  # This is needed to make it easy to sort the buttons
 
-        for pair, score in self.data.scores.items():
+        for pair in self.data.scores:
+            score = self.data.hiscore(pair)
             if pair not in self.button_dict:
                 new_button = PairButton(pair, score, self.button_size)
                 new_button.clicked.connect(self.pair_clicked.emit)
@@ -468,9 +471,10 @@ class Results(QWidget):
 
 def main():
     # Testing
+    # TODO: clean this up
     import sys
 
-    test_data = chorddata.ChordData("test.txt")
+    test_data = chorddata.ChordData(sys.argv[1])
     a = QApplication([])
     b = ChordChanges(test_data)
     with open("chordchange_styles.qss") as styles:

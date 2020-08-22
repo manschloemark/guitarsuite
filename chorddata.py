@@ -94,6 +94,13 @@ class ChordData:
         """
         return self._file
 
+    def hiscore(self, pair):
+        """
+            Get the highest score for the given pair
+        """
+        return max(self.__scores[pair].values())
+
+
     def add_chord(self, chord):
         """
             Add chord to self.chords.
@@ -120,7 +127,7 @@ class ChordData:
         if key in self.scores:
             self.scores[key][timestamp] = score
             return True
-        return None
+        raise IndexError(f"Key not found {pair}")
 
     def _update_chordpairs(self, chord):
         """
@@ -132,7 +139,7 @@ class ChordData:
         """
         for old_chord in self.chords:
             new_key = tuple(sorted([chord, old_chord]))
-            self.scores[new_key] = {time.time(): None}
+            self.scores[new_key] = {time.time(): 0}
 
     def random_key(self):
         """
