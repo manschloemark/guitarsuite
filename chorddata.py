@@ -109,12 +109,13 @@ class ChordData:
             If not duplicate, first update the dict of chord pairs, then add the chord to the list of chords
         """
         chord = parse_chord(chord)
-
+        # TODO : make the return value form this method specify whether the chord was a duplicate or invalid (I could use False = Dupe, None = invalid, or 0 and -1)
+        # or I could use exceptions
         if chord and chord not in self.chords:
             self._update_chordpairs(chord)
             self.chords.append(chord)
             return True
-        return None
+        return False
 
     def add_score(self, pair, score, timestamp=None):
         """

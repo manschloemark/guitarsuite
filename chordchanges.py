@@ -258,7 +258,7 @@ class ChordPairGrid(QWidget):
 
     def make_buttons(self):
         self.button_dict = {}
-        self.buttons = []  # This is needed to make it easy to sort the buttons
+        self.buttons = []  # This is used to make it easy to sort the buttons
 
         for pair in self.data.scores:
             score = self.data.hiscore(pair)

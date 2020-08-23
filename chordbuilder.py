@@ -32,6 +32,7 @@ class ChordBuilder(QWidget):
     # I just enjoy making stuff like this
 
     submit = pyqtSignal(str)
+
     def __init__(self, *args, **kwargs):
         super(ChordBuilder, self).__init__(*args, **kwargs)
         self.vbox = QVBoxLayout(self)
@@ -50,9 +51,10 @@ class ChordBuilder(QWidget):
 
         # I do not know the proper terminology for these... things? Chord descriptors?
         keys = "A B C D E F G".split()
-        #pitches = ("\u266E", "\u266F", "\u266D")
-        pitches = "Natural # b".split()
-        qualities = "Maj min dim sus ".split()
+        #pitches = ("\u266E", "\u266F", "\u266D") # UTF8 characters for natural, sharp, and flat. I do not use them because it complicates the regex.
+        pitches = "b Natural #".split()
+        #qualities = "Maj min dim sus ".split() # For now I won't include dim and sus
+        qualities = "Maj min".split()
         intervals = "2 3 4 5 6 7 9 11 13".split()
 
         self.vbox.addWidget(controls)
@@ -95,7 +97,10 @@ class ChordBuilder(QWidget):
         if quality == self.quality or quality == 'Maj':
             self.quality = ''
         else:
-            self.quality = quality
+            if quality == 'min':
+                self.quality = 'm'
+            else:
+                self.quality = quality
         self.update_label()
 
     def update_label(self):
