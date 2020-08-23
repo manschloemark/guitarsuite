@@ -1,4 +1,4 @@
-# Guitar Practice Suite (WIP)
+# Guitar Practice Suite
 
 This program streamlines the monotonous parts of guitar practice.
 
