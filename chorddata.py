@@ -94,11 +94,14 @@ class ChordData:
         """
         return self._file
 
-    def hiscore(self, pair):
+    def highscore(self, pair):
         """
             Get the highest score for the given pair
         """
         return max(self.__scores[pair].values())
+
+    def avgscore(self, pair):
+        return sum(self.__scores[pair].values()) // len(self.__scores[pair].values())
 
 
     def add_chord(self, chord):
