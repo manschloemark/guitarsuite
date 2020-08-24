@@ -130,6 +130,10 @@ class ChordChanges(QWidget):
         self.cancel.setEnabled(False)
         self.content_stack.setCurrentWidget(self.chord_select)
 
+    def refresh(self):
+        self.raise_chordselect()
+        self.chord_select.refresh()
+
 
 class Scoreboard(QWidget):
     """ Simple widget used to display currently selected chord pair
@@ -203,6 +207,7 @@ class ChordSelect(QWidget):
         self.pair_selected.emit(key, self.data.highscore(key))
 
     def refresh(self):
+        self.chord_pair_grid.make_buttons()
         self.chord_pair_grid.rearrange()
 
 
@@ -296,7 +301,12 @@ class ChordPairGrid(QWidget):
         self.make_buttons()
         self.rearrange()
 
+    def clear_grid(self):
+        for i in reversed(range(self.pair_grid.count())):
+            self.pair_grid.itemAt(i).widget().setParent(None)
+
     def rearrange(self):
+        self.clear_grid()
         self.sort_buttons()
         self.set_grid()
 
