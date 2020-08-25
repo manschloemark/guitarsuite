@@ -94,11 +94,14 @@ class ChordData:
         """
         return self._file
 
-    def hiscore(self, pair):
+    def highscore(self, pair):
         """
             Get the highest score for the given pair
         """
         return max(self.__scores[pair].values())
+
+    def avgscore(self, pair):
+        return sum(self.__scores[pair].values()) // len(self.__scores[pair].values())
 
 
     def add_chord(self, chord):
@@ -107,15 +110,21 @@ class ChordData:
             Chord is first checked by parse_chord to make sure it is a real chord.
             Check if chord is duplicate
             If not duplicate, first update the dict of chord pairs, then add the chord to the list of chords
+
+            returns
+                True if chord is added to self.chords
+                False if chord is valid but already in self.chords
+                None if chord is invalid
         """
         chord = parse_chord(chord)
-        # TODO : make the return value form this method specify whether the chord was a duplicate or invalid (I could use False = Dupe, None = invalid, or 0 and -1)
-        # or I could use exceptions
-        if chord and chord not in self.chords:
-            self._update_chordpairs(chord)
-            self.chords.append(chord)
-            return True
-        return False
+        if chord:
+            if chord in self.chords:
+                return False
+            else:
+                self._update_chordpairs(chord)
+                self.chords.append(chord)
+                return True
+        return None
 
     def add_score(self, pair, score, timestamp=None):
         """
@@ -148,17 +157,18 @@ class ChordData:
         """
         return random.choice(list(self.scores))
 
+    # I made this method a long time ago and I want to rewrite it
     def weighted_random(self, offset=5):
         """
             Returns a key chosen randomly from self.scores.
 
-            This method is weighted towards keys associated with lower values.
+            This method is weighted towards keys with lower values.
             Use random_key to get a random key with even distribution
 
             How it is weighted:
                 1. Select the target - the lowest score in the dict.
                 2. Select a key - use random.choice to pick a key.
-                3. Generate an int - use random.randint to pick an int 
+                3. Generate an int - use random.randint to pick an int
                    in range 0 to <key_selected> + offset
                 4. if the generated int is less than the target, return that key.
                    else, go back to step 2.
@@ -168,9 +178,11 @@ class ChordData:
             By default the offset is 5.
         """
         keys = list(self.scores)
-        target = min(self.scores.values())
+        # Should I use high score or average score to weight the chord pairs?
+        # I think the best would be some function that uses both high and average, and the timestamps to determine some metric to base it off of
+        target = min([self.highscore(pair) for pair in self.scores])
         key = random.choice(keys)
-        while random.randint(0, self.scores[key] + offset) > target:
+        while random.randint(0, self.highscore(key) + offset) > target:
             key = random.choice(keys)
         return key
 

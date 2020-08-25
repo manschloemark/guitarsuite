@@ -47,7 +47,6 @@ class ChordBuilder(QWidget):
         self.control_hbox.addWidget(self.chord_label)
         self.control_hbox.addWidget(self.add_chord)
 
-        self.key, self.pitch, self.quality, self.interval = '', '', '', ''
 
         # I do not know the proper terminology for these... things? Chord descriptors?
         keys = "A B C D E F G".split()
@@ -68,9 +67,15 @@ class ChordBuilder(QWidget):
                 button.clicked.connect(lambda x, func=func, char=char: func(char))
             self.vbox.addWidget(row)
 
+        self.reset_chord()
+
     @property
     def chord(self):
         return f"{self.key}{self.pitch}{self.quality}{self.interval}"
+
+    def reset_chord(self):
+        self.key, self.pitch, self.quality, self.interval = '', '', '', ''
+        self.update_label()
 
     def set_key(self, key):
         if key == self.key:
