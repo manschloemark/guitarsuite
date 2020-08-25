@@ -1,5 +1,6 @@
-""" Weird module that I will use to store variables that
-    should be settings in a config file or something. """
+""" module that I will use to store variables that
+    should probably be settings in a config file or something.
+"""
 
 # Variables so I can just address the score thresholds by a name
 bad = 10
@@ -18,7 +19,7 @@ COLOR_DICT = {
         20: "#d0521d", # Poor
         30: "#ea8d00", # Okay
         40: "#e1a500", # Decent
-        50: "#a4a300", # Good
+        50: "#94a500", # Good
         60: "#88b03a", # Great
         1000: "#229933" # Mastery
     }
