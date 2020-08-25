@@ -35,6 +35,7 @@ This program streamlines the monotonous parts of guitar practice.
     - tools to practice chord progressions
     - scale practice
   - Add a metronome feature
+  - Clean up this repository so it includes the fewest files necessary.
 
 ## Problems
 > I use regular expressions to verify that chords are valid.
