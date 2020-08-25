@@ -28,7 +28,7 @@ This program streamlines the monotonous parts of guitar practice.
 
 ## TODO
   - Add more features to the chord changes practice
-    - add a decay attribute to each chord pair - the longer it has been since you played it, the more you are urged to practice it
+    - add a decay attribute to each chord pair - the longer it has been since you played it, the more you are advised to practice it
     - add a stats screen / widget where you can view a graph of your recent sessions
     - add sounds to the timer start and end
   - When I learn more about guitar and music theory I'll add some more features to this.
