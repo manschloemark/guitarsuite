@@ -16,16 +16,18 @@ class UserProgress(QWidget):
         self.grid = QHBoxLayout(self)
 
         self.chord_side = QWidget()
+        self.chord_side.setProperty('id', 'known-chords')
         self.chord_vbox = QVBoxLayout(self.chord_side)
 
         self.stats_side = QWidget()
+        self.stats_side.setProperty('id', 'stats-container')
         self.stats_vbox = QVBoxLayout(self.stats_side)
 
         known_chords = QLabel("My Chords")
         known_chords.setProperty("font-class", "h3")
         self.chord_container = QWidget()
         self.chord_grid = QGridLayout(self.chord_container)
-        self.instructions = QLabel("Add Chords")
+        self.instructions = QLabel("Enter a new chord")
         self.instructions.setProperty("font-class", "instructions")
         self.instructions.setAlignment(Qt.AlignBottom)
         self.chord_entry = QLineEdit()
@@ -57,10 +59,10 @@ class UserProgress(QWidget):
         self.chord_vbox.addWidget(self.instructions)
         self.chord_vbox.addWidget(self.chord_entry)
         self.chord_vbox.addWidget(self.submit_button)
-        self.chord_vbox.setAlignment(Qt.AlignCenter)
+        self.chord_vbox.setAlignment(Qt.AlignTop)
         self.stats_vbox.addWidget(table_label)
         self.stats_vbox.addWidget(self.stats_table)
-        self.stats_vbox.setAlignment(Qt.AlignCenter)
+        self.stats_vbox.setAlignment(Qt.AlignTop)
 
         self.grid.addWidget(self.chord_side)
         self.grid.addWidget(self.stats_side)
@@ -125,16 +127,16 @@ class UserProgress(QWidget):
         """
         chord = self.chord_entry.text()
         if chord_added := self.data.add_chord(chord):
-            chord_button = QPushButton(chord)
+            chord_button = QPushButton(chord_added)
             chord_button.setProperty("id", "chord-button")
-            self.chord_dict[chord] = chord_button
+            self.chord_dict[chord_added] = chord_button
             self.update_chords()
             self.display_stats()
             self.instructions.setText(f"'{chord}' added.")
         elif chord_added == False:
-            self.instructions.setText(f"'{chord}' was not added. It is a duplicate.")
+            self.instructions.setText(f"'{chord}' was not added. It is already known.")
         elif chord_added == None:
-            self.instructions.setText(f"'{chord}' was not added. It did not pass the inspection.")
+            self.instructions.setText(f"'{chord}' was not added. It could not be validated.")
 
 
 if __name__ == "__main__":

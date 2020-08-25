@@ -28,3 +28,5 @@ QLabel[font-class=instructions] { font-size: 14px; }
 QLabel[font-class=h3] { font-size: 18px; }
 
 QTableWidget { min-height: 480px; }
+
+QWidget[id=known-chords] { min-width: 400px; }

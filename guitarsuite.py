@@ -12,6 +12,7 @@ class GuitarSuite(QWidget):
 
     def __init__(self, data, *args, **kwargs):
         super(GuitarSuite, self).__init__(*args, **kwargs)
+        self.setWindowTitle("Guitar Suite")
         self.data = data
         self.vbox = QVBoxLayout(self)
 
@@ -26,6 +27,9 @@ class GuitarSuite(QWidget):
         self.nav.currentChanged.connect(self.reload_widget)
 
         self.vbox.addWidget(self.nav)
+
+        if self.data.chords == []:
+            self.nav.setCurrentWidget(self.userprogress)
 
     def reload_widget(self, page):
         if page == 0:

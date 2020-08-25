@@ -257,7 +257,9 @@ class ChordPairGrid(QWidget):
 
         self.layout.addWidget(self.scroll_area)
         self.layout.addWidget(sort_controls)
+        self.init_grid()
 
+    def init_grid(self):
         self.make_buttons()
         self.rearrange()
 

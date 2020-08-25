@@ -123,7 +123,7 @@ class ChordData:
             else:
                 self._update_chordpairs(chord)
                 self.chords.append(chord)
-                return True
+                return chord
         return None
 
     def add_score(self, pair, score, timestamp=None):
