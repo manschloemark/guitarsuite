@@ -12,7 +12,14 @@ class UserProgress(QWidget):
     def __init__(self, data, *args, **kwargs):
         super(UserProgress, self).__init__(*args, **kwargs)
         self.data = data
-        self.grid = QGridLayout(self)
+        # NOTE : change the name of this if you stick with vbox instead of grid
+        self.grid = QHBoxLayout(self)
+
+        self.chord_side = QWidget()
+        self.chord_vbox = QVBoxLayout(self.chord_side)
+
+        self.stats_side = QWidget()
+        self.stats_vbox = QVBoxLayout(self.stats_side)
 
         known_chords = QLabel("My Chords")
         known_chords.setProperty("font-class", "h3")
@@ -20,6 +27,7 @@ class UserProgress(QWidget):
         self.chord_grid = QGridLayout(self.chord_container)
         self.instructions = QLabel("Add Chords")
         self.instructions.setProperty("font-class", "instructions")
+        self.instructions.setAlignment(Qt.AlignBottom)
         self.chord_entry = QLineEdit()
         self.submit_button = QPushButton("Add Chord")
         self.submit_button.clicked.connect(self.submit_chord)
@@ -37,13 +45,26 @@ class UserProgress(QWidget):
         self.stats_table.setMinimumWidth(450)
         self.stats_table.setMaximumWidth(450)
 
-        self.grid.addWidget(known_chords, 0, 0, 1, 2)
-        self.grid.addWidget(self.chord_container, 1, 0, 1, 2)
-        self.grid.addWidget(self.instructions, 2, 0, 1, 2)
-        self.grid.addWidget(self.chord_entry, 3, 0)
-        self.grid.addWidget(self.submit_button, 3, 1)
-        self.grid.addWidget(table_label, 0, 2, 1, 2)
-        self.grid.addWidget(self.stats_table, 1, 2, 3, 2)
+        #self.grid.addWidget(known_chords, 0, 0, 1, 2)
+        #self.grid.addWidget(self.chord_container, 1, 0, 1, 2)
+        #self.grid.addWidget(self.instructions, 2, 0, 1, 2)
+        #self.grid.addWidget(self.chord_entry, 3, 0)
+        #self.grid.addWidget(self.submit_button, 3, 1)
+        #self.grid.addWidget(table_label, 0, 2, 1, 2)
+        #self.grid.addWidget(self.stats_table, 1, 2, 4, 2)
+        self.chord_vbox.addWidget(known_chords)
+        self.chord_vbox.addWidget(self.chord_container)
+        self.chord_vbox.addWidget(self.instructions)
+        self.chord_vbox.addWidget(self.chord_entry)
+        self.chord_vbox.addWidget(self.submit_button)
+        self.chord_vbox.setAlignment(Qt.AlignCenter)
+        self.stats_vbox.addWidget(table_label)
+        self.stats_vbox.addWidget(self.stats_table)
+        self.stats_vbox.setAlignment(Qt.AlignCenter)
+
+        self.grid.addWidget(self.chord_side)
+        self.grid.addWidget(self.stats_side)
+        #self.grid.setAlignment(Qt.AlignCenter)
 
         self.init_chords()
         self.display_chords()
