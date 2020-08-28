@@ -1,6 +1,7 @@
 """ Graphical User Interface to facilitate 60 second chord changes """
-from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QTimer
+from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QBasicTimer
 from PyQt5.QtWidgets import (
+    QSizePolicy,
     QApplication,
     QCheckBox,
     QGridLayout,
@@ -13,6 +14,7 @@ from PyQt5.QtWidgets import (
     QStackedLayout,
     QVBoxLayout,
     QWidget,
+    QLCDNumber,
 )
 from PyQt5.QtGui import QColor, QFont, QPalette
 import chorddata
@@ -105,11 +107,11 @@ class ChordChanges(QWidget):
         if self.key:
             self.content_stack.setCurrentWidget(self.timer)
             self.cancel.setEnabled(True)
-            self.timer.start()
+            self.timer.start_timer()
 
     def cancel_session(self):
         self.content_stack.setCurrentWidget(self.chord_select)
-        self.timer.reset()
+        self.timer.clock.stop()
         self.cancel.setEnabled(False)
 
     def session_finished(self):
@@ -351,57 +353,112 @@ class PairButton(QPushButton):
     def mousePressEvent(self, e):
         self.clicked.emit(self.pair, self.score)
 
-
 class PlayTimer(QWidget):
-    """ Widget that displays a short timer and then a full 60 second timer """
-
     done = pyqtSignal()
-    _preptime = 2
-    _runtime = 60
 
     def __init__(self, *args, **kwargs):
-        super(PlayTimer, self).__init__(*args, **kwargs)
-        self.setProperty("id", "timer")
-        self.vbox = QVBoxLayout(self)
-        self.vbox.setAlignment(Qt.AlignCenter)
-        self.vbox.setSpacing(8)
-        self.instruction = QLabel()
-        self.instruction.setProperty("id", "timer-instruction")
-        self.vbox.addWidget(self.instruction)
-        self.display = QLabel()
-        self.display.setProperty("id", "timer-display")
-        self.vbox.addWidget(self.display)
-        self.vbox.setAlignment(self.display, Qt.AlignCenter)
-        self.clock = QTimer()
-        self.clock.timeout.connect(self.tick)
-        self.reset()
+        super().__init__(*args, **kwargs)
+        self.init_ui()
 
-    def start(self):
-        self.reset()
-        self.clock.start(1000)
+    def init_ui(self):
+        self.setProperty('id', 'timer')
+        vbox = QVBoxLayout(self)
 
-    def reset(self):
-        """ Preptime is 3 seconds long but the variable is 2 because
-            the first second happens when the timer is started.
-            Runtime is 60 seconds """
-        self.clock.stop()
-        self.preptime = self._preptime
-        self.runtime =  self._runtime
-        self.instruction.setText("Get ready!")
-        self.display.setText("3")
+        self.instructions = QLabel(self)
+        self.instructions.setProperty("id", "timer-instruction")
+        self.lcd = QLCDNumber(2, self)
+        self.clock = QBasicTimer()
 
-    def tick(self):
-        if self.preptime != 0:
-            self.display.setText(str(self.preptime))
+        vbox.addWidget(self.instructions)
+        vbox.addWidget(self.lcd)
+        vbox.setAlignment(Qt.AlignCenter)
+        vbox.setAlignment(self.instructions, Qt.AlignCenter)
+
+    def timerEvent(self, e):
+        if self.preptime > 1:
             self.preptime -= 1
-        elif self.runtime != 0:
-            if self.runtime == self._runtime:
-                self.instruction.setText("Start!")
-            self.display.setText(str(self.runtime))
+            self.lcd.display(self.preptime)
+        elif self.runtime == 60:
+            self.lcd.display(self.runtime)
+            self.runtime -= 1
+            self.instructions.setText("Play!")
+        elif self.runtime > 0:
+            self.lcd.display(self.runtime)
             self.runtime -= 1
         else:
             self.clock.stop()
             self.done.emit()
+
+    def resizeEvent(self, e):
+        self.lcd.setFixedSize(e.size().width() // 2, e.size().height() // 2)
+
+    def start_timer(self):
+        self.preptime, self.runtime = 3, 60
+        self.instructions.setText("Get ready!")
+        self.lcd.display(self.preptime)
+        self.clock.start(1000, self)
+
+#class PlayTimer(QWidget):
+#    """ Widget that displays a short timer and then a full 60 second timer """
+#
+#    done = pyqtSignal()
+#    _preptime = 3
+#    _runtime = 60
+#
+#    def __init__(self, *args, **kwargs):
+#        super(PlayTimer, self).__init__(*args, **kwargs)
+#        self.setProperty("id", "timer")
+#        self.vbox = QVBoxLayout(self)
+#        self.vbox.setAlignment(Qt.AlignCenter)
+#        self.vbox.setSpacing(8)
+#        self.instruction = QLabel()
+#        self.instruction.setProperty("id", "timer-instruction")
+#        self.vbox.addWidget(self.instruction)
+#        self.lcd = QLCDNumber()
+#        self.lcd.setProperty("id", "timer-display")
+#        self.vbox.addWidget(self.lcd)
+#        self.vbox.setAlignment(self.lcd, Qt.AlignCenter)
+#        self.clock = QBasicTimer()
+#        self.reset()
+#
+#    def timerEvent(self, e):
+#        if self.preptime > 0:
+#            self.lcd.display(self.preptime)
+#            self.preptime -= 1
+#        elif self.runtime > 0:
+#            if self.runtime == 60:
+#                self.instruction.setText("Play!")
+#            self.lcd.display(self.runtime)
+#            self.runtime -= 1
+#        else:
+#            self.clock.stop()
+#            self.done.emit()
+#
+#    def start(self):
+#        self.reset()
+#        self.clock.start(1000, self)
+#
+#    def reset(self):
+#        """ Preptime is 3 seconds long but the variable is 2 because
+#            the first second happens when the timer is started.
+#            Runtime is 60 seconds """
+#        self.clock.stop()
+#        self.preptime = self._preptime
+#        self.runtime =  self._runtime
+#        self.instruction.setText("Get ready!")
+#
+#    def tick(self):
+#        if self.preptime != 0:
+#            self.display.setText(str(self.preptime))
+#            self.preptime -= 1
+#        elif self.runtime != 0:
+#            if self.runtime == self._runtime:
+#                self.instruction.setText("Start!")
+#            self.display.setText(str(self.runtime))
+#            self.runtime -= 1
+#        else:
+#            self.clock.stop()
+#            self.done.emit()
 
 
 class ScoreInput(QWidget):
@@ -489,8 +546,8 @@ def main():
     test_data = chorddata.ChordData(sys.argv[1])
     a = QApplication([])
     b = ChordChanges(test_data)
-    with open("chordchange_styles.qss") as styles:
-        a.setStyleSheet(styles.read())
+    with open("guitarsuite_styles.qss") as styles:
+        b.setStyleSheet(styles.read())
     if 't' in sys.argv[1]:
         b.timer._preptime = 1
         b.timer._runtime = 1
